@@ -1,7 +1,14 @@
 """Contains methods to check a directory for duplicate and similar images and move
 them to a designated folder. Also contains methods to create a memory for images
 between certain dates. Useful for organization of an archive of images.
-(only accepts .jpg currently)"""
+(only accepts .jpg currently)
+
+Reference Information:
+https://stackoverflow.com/questions/7765810/is-there-a-way-to-detect-if-an-image-is-blurry
+https://www.pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
+https://www.analyticsvidhya.com/blog/2020/09/how-to-perform-blur-detection-using-opencv-in-python/
+https://youtu.be/EW08rD-GFh0
+"""
 import os
 import hashlib
 import ntpath
@@ -16,9 +23,9 @@ from PIL import Image
 
 def path_leaf(path):
 	"""Returns the last identifier of a path"""
-
 	head, tail = ntpath.split(path)
 	return tail or ntpath.basename(head)
+
 #hash duplicate checker
 def get_duplicates(imageList):
 	"""Returns a list with objects containing (index of duplicate in imageList,
@@ -95,6 +102,8 @@ def filter_images(images):
 			imageList.append(image)
 		except AssertionError as e:
 			print(e)
+		except:
+			print('An error occurred with an image: ' + image)
 	return imageList
 
 def img_gray(image):
@@ -193,12 +202,10 @@ def create_memory(sourcePath):
 	while True:
 		minDate = input('Enter a minimum date (YYYY:MM:DD):\n')
 		if len(minDate) == 10:
-			minDate = minDate + ' 00:00:00'
 			break
 	while True:
 		maxDate = input('Enter a maximum date (YYYY:MM:DD):\n')
 		if len(maxDate) == 10:
-			maxDate = maxDate + ' 00:00:00'
 			break
 
 	#sort the pictures into the folder
@@ -209,8 +216,8 @@ def sort_pictures(sourcePath, destPath, mindate, maxdate):
 	"""#sort_pictures(sourcePath, destPath, '18/09/19 00:00:00', '18/09/19 00:00:00')
 	sends a picture to a destPathination if it lies between two dates"""
 	#convert dates to datetime
-	minDate = datetime.strptime(mindate, '%Y:%m:%d %H:%M:%S')
-	maxDate = datetime.strptime(maxdate, '%Y:%m:%d %H:%M:%S')
+	minDate = datetime.strptime(mindate + ' 00:00:00', '%Y:%m:%d %H:%M:%S')
+	maxDate = datetime.strptime(maxdate + '00:00:00', '%Y:%m:%d %H:%M:%S')
 	imageList = get_images(sourcePath)
 	for img in imageList:
 		imgDate = image_date(img)
@@ -219,8 +226,7 @@ def sort_pictures(sourcePath, destPath, mindate, maxdate):
 				send_img_to_dest(img, destPath)
 
 def send_img_to_dest(img, destPath):
-	"""get the imageList,
-	read each image and see if the date range in between min and max date"""
+	"""send an image file to the destination"""
 	fileName = path_leaf(img)
 	fileName, ext = os.path.splitext(fileName)#get the name and extension of the file
 	destination = os.path.join(destPath, fileName + ext)
